@@ -1,0 +1,86 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+void main()
+{
+  int flag=0;
+  unsigned int st,locctr,len;
+  char opcode[100],op[100],label[100],opt[100],symbol[100],opt1[100],opt2[100];
+  FILE *f1,*f2,*f3,*f4,*f5;
+  f2=fopen("intermediate.txt","r+");
+  f3=fopen("prolen.txt","r+");
+  f4=fopen("record.txt","w");
+  fscanf(f2,"\t%s\t%s\t%X",label,opcode,&st);
+  if(strcmp(opcode,"START")==0)
+  {
+    fscanf(f3,"%X",&len);
+    fprintf(f4,"H^%s^%X^%X\n",label,st,len);
+    printf("H^%s^%X^%X\n",label,st,len);
+    fscanf(f2,"%X\t%s\t%s\t%s",&locctr,label,opcode,op);
+    fprintf(f4,"T^%X^%X",st,len);
+    printf("T^%X^%X",st,len);
+  }
+  while(strcmp(opcode,"END")!=0)
+  {
+      f1=fopen("optab.txt","r+");
+      fscanf(f1,"%s\t%s",opt,opt1);
+      while(!feof(f1))
+      {
+        if(strcmp(opcode,opt)==0)
+        {
+          fprintf(f4,"^%s",opt1);
+          printf("^%s",opt1);
+          f5=fopen("symtab.txt","r");
+          fscanf(f5,"%s\t%s",symbol,opt2);
+          while(!feof(f5))
+          {
+            if(strcmp(op,symbol)==0)
+            {
+              fprintf(f4,"%s",opt2);
+              printf("%s",opt2);
+              flag=1;
+              break;
+            }
+            else
+            {
+            fscanf(f5,"%s\t%s",symbol,opt2);
+            }
+          }
+          fclose(f5);
+          if(flag==0)
+          {
+            fprintf(f4,"0000");
+            printf("0000");
+          }
+          break;
+        }
+        else
+        {
+          fscanf(f1,"%s\t%s",opt,opt1);
+        }
+      }
+      fclose(f1);
+      flag=0;
+      if((strcmp(opcode,"WORD")==0)||(strcmp(opcode,"BYTE")==0))
+      {
+        printf("^");
+        fprintf(f4, "^" );
+        if(strcmp(opcode,"WORD")==0)
+        {
+          printf("000%s",op);
+          fprintf(f4,"000%s",op);
+        }
+        else
+        {
+          printf("%s",op);
+          fprintf(f4,"%s",op);
+        }
+      }
+    fscanf(f2,"%X\t%s\t%s\t%s",&locctr,label,opcode,op);
+  }
+  fprintf(f4,"\nE^%X",st);
+  printf("\nE^%X",st);
+  fclose(f2);
+  fclose(f3);
+  fclose(f4);
+}
